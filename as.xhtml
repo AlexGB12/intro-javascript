@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+<h:head>
+    <title>KINAL COFFEE SHOP - Admin</title>
+    <link rel="stylesheet" href="https://unpkg.com/primeflex@latest/primeflex.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/primeflex/themes/primeone-dark.css"/>
+</h:head>
+<h:body style="background: linear-gradient(90deg, #3f2f25, #7a5f4f); min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between;">
+
+    <div class="card mb-3 p-4">
+        <p:menubar>
+            <p:menuitem value="Inicio" icon="pi pi-home" outcome="admin_dashboard.xhtml"/>
+            <p:submenu label="Gestión de Datos" icon="pi pi-database">
+                <p:menuitem value="Alumnos" icon="pi pi-user-plus" outcome="alumnos.xhtml"/>
+                <p:menuitem value="Categorías" icon="pi pi-tags" outcome="categorias.xhtml"/>
+                <p:menuitem value="Pagos" icon="pi pi-money-bill" outcome="pagos.xhtml"/>
+                <p:menuitem value="Pedidos" icon="pi pi-shopping-cart" outcome="pedidos.xhtml"/>
+                <p:menuitem value="Productos" icon="pi pi-box" outcome="productos.xhtml"/>
+                <p:menuitem value="Usuarios" icon="pi pi-users" outcome="usuarios.xhtml"/>
+            </p:submenu>
+            <p:menuitem value="Acerca de" icon="pi pi-info-circle" />
+        </p:menubar>
+    </div>
+
+    <div class="p-d-flex p-jc-center p-ai-center p-mt-4 p-4 mb-3" style="flex: 1;">
+        <p:panel header="Gestión de Pacientes" style="min-height: 80vh; box-shadow: 0 4px 8px rgba(0,0,0,0.3); margin: 0 auto; width: 90%;">
+            <h:form id="formulario-pacientes">
+                <p:growl id="mensaje-emergente" showDetail="true"/>
+
+                <div class="card">
+                    <p:menubar>
+                        <f:facet name="options">
+                            <p:commandButton value="Nuevo Paciente" icon="pi pi-fw pi-plus"
+                                             actionListener="#{mainmenucontroller.agregarPaciente()}"
+                                             update=":formulario-modal:ventana-paciente"
+                                             oncomplete="PF('ventanaModalPaciente').show()"/>
+                        </f:facet>
+                    </p:menubar>
+                </div>
+
+                <div class="card mt-3">
+                    <p:dataTable value="#{mainmenucontroller.pacientes}" var="paciente"
+                                 id="tabla-pacientes" widgetVar="tablaPaciente"
+                                 paginator="true" rows="10" rowsPerPageTemplate="5,10,15">
+                        <f:facet name="header">
+                             <h3>Registro de Paciente - ASCO</h3>
+                        </f:facet>
+                        <p:column headerText="ID">
+                            <h:outputText value="#{paciente.codigoPaciente}"/>
+                        </p:column>
+                        <p:column headerText="NOMBRE">
+                            <h:outputText value="#{paciente.nombre}"/>
+                        </p:column>
+                        <p:column headerText="FECHA YYYY/MM/DD">
+                            <h:outputText value="#{paciente.fechaNacimiento}"/>
+                        </p:column>
+                        <p:column headerText="TELEFONO">
+                            <h:outputText value="#{paciente.telefono}"/>
+                        </p:column>
+                        <p:column headerText="Acciones">
+                            <p:commandButton icon="pi pi-pencil"
+                                             update=":formulario-modal:ventana-paciente"
+                                             oncomplete="PF('ventanaModalPaciente').show()"
+                                             style="margin-right:.5rem">
+                                <f:setPropertyActionListener value="#{paciente}" target="#{mainmenucontroller.pacienteSelecionado}"/>
+                            </p:commandButton>
+                            <p:commandButton icon="pi pi-trash"
+                                             oncomplete="PF('ventanaEliminarPaciente').show()">
+                                <f:setPropertyActionListener value="#{paciente}" target="#{mainmenucontroller.pacienteSelecionado}"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+            </h:form>
+        </p:panel>
+    </div>
+    
+    <h:form id="formulario-modal">
+        <p:dialog header="Detalle de Paciente" showEffect="fade" modal="true" widgetVar="ventanaModalPaciente" responsive="true">
+            <p:outputPanel id="ventana-paciente" class="ui-fluid">
+                <div class="field">
+                    <p:outputLabel for="nombre">Nombre: </p:outputLabel>
+                    <p:inputText id="nombre" value="#{mainmenucontroller.pacienteSelecionado.nombre}" required="true"/>
+                </div>
+                <div class="field">
+                    <p:outputLabel for="fecha">Fecha: </p:outputLabel>
+                    <p:inputText id="fecha" value="#{mainmenucontroller.pacienteSelecionado.fechaNacimiento}" required="true"/>
+                </div>
+                <div class="field">
+                    <p:outputLabel for="telefono">Teléfono: </p:outputLabel>
+                    <p:inputText id="telefono" value="#{mainmenucontroller.pacienteSelecionado.telefono}" required="true"/>
+                </div>
+            </p:outputPanel>
+            <f:facet name="footer">
+                <p:commandButton value="Guardar" icon="pi pi-check"
+                                 actionListener="#{mainmenucontroller.guardarPaciente()}"
+                                 update="formulario-pacientes:tabla-pacientes formulario-pacientes:mensaje-emergente"
+                                 oncomplete="PF('ventanaModalPaciente').hide()"/>
+                <p:commandButton value="Cancelar" icon="pi pi-times"
+                                 onclick="PF('ventanaModalPaciente').hide()"
+                                 class="ui-button-secondary" type="button"/>
+            </f:facet>
+        </p:dialog>
+
+        <p:confirmDialog widgetVar="ventanaEliminarPaciente" ShowEffect="fade" width="300"
+                         message="¿Desea eliminar el paciente?"
+                         header="Confirmar" severity="warn">
+            <p:commandButton value="Sí" icon="pi pi-check"
+                             actionListener="#{mainmenucontroller.eliminarPaciente()}"
+                             update="formulario-pacientes:tabla-pacientes formulario-pacientes:mensaje-emergente"
+                             oncomplete="PF('ventanaEliminarPaciente').hide()"/>
+            <p:commandButton value="No" icon="pi pi-times"
+                             onclick="PF('ventanaEliminarPaciente').hide()"
+                             styleClass="ui-button-secondary" type="button"/>
+        </p:confirmDialog>
+    </h:form>
+
+    <p:divider/>
+
+    <footer class="p-d-flex p-jc-center p-ai-center"
+            style="color: #fff; font-size: 0.9rem; background: #000000; text-align: center; padding: 2rem 1rem; margin-top: auto;">
+        © 2025 KINAL COFFEE SHOP - Todos los derechos reservados
+    </footer>
+</h:body>
+</html>
